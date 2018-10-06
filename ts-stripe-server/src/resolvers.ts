@@ -1,6 +1,7 @@
+import * as bcrypt from "bcryptjs";
 import { IResolvers } from "graphql-tools";
 import { User } from "./entity/User";
-import * as bcrypt from "bcryptjs";
+import { stripe } from "./stripe";
 
 export const resolvers: IResolvers = {
   Query: {
@@ -27,6 +28,28 @@ export const resolvers: IResolvers = {
         return null;
       }
       req.session.userId = user.id;
+      return user;
+    },
+    createSubscription: async (_, { source }, { req }) => {
+      if (!req.session || !req.session.userId) {
+        throw new Error("Not Authenticated");
+      }
+
+      const user = await User.findOne(req.session.userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const customer = await stripe.customers.create({
+        email: user.email,
+        source,
+        plan: process.env.PLAN_ID
+      });
+
+      user.stripeId = customer.id;
+      user.type = "standard";
+      user.save();
+
       return user;
     }
   }

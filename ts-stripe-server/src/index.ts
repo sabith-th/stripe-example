@@ -1,4 +1,5 @@
 import { ApolloServer } from "apollo-server-express";
+import "dotenv/config";
 import * as express from "express";
 import * as session from "express-session";
 import "reflect-metadata";
@@ -24,10 +25,13 @@ const startServer = async () => {
     })
   );
 
-  server.applyMiddleware({ app, cors: {
-    credentials: true,
-    origin: "http://localhost:3000"
-  } });
+  server.applyMiddleware({
+    app,
+    cors: {
+      credentials: true,
+      origin: "http://localhost:3000"
+    }
+  });
 
   app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
