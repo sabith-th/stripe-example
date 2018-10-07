@@ -2,6 +2,7 @@ import { gql } from "apollo-boost";
 import * as React from "react";
 import { Mutation } from "react-apollo";
 import { RouteComponentProps } from "react-router-dom";
+import { meQuery } from "../../graphql/queries/me";
 import { LoginMutation, LoginMutationVariables } from "../../schemaTypes";
 
 const loginMutation = gql`
@@ -9,6 +10,7 @@ const loginMutation = gql`
     login(email: $email, password: $password) {
       id
       email
+      type
     }
   }
 `;
@@ -21,8 +23,19 @@ export class LoginView extends React.PureComponent<RouteComponentProps<{}>> {
   public render() {
     const { email, password } = this.state;
     return (
-      <Mutation<LoginMutation, LoginMutationVariables> mutation={loginMutation}>
-        {mutate => (
+      <Mutation<LoginMutation, LoginMutationVariables>
+        update={(cache, { data }) => {
+          if (!data || !data.login) {
+            return;
+          }
+          cache.writeQuery({
+            data: { me: data.login },
+            query: meQuery
+          });
+        }}
+        mutation={loginMutation}
+      >
+        {(mutate, { client }) => (
           <div
             style={{
               alignItems: "center",
@@ -46,8 +59,8 @@ export class LoginView extends React.PureComponent<RouteComponentProps<{}>> {
               onChange={this.handleChange}
             />
             <button
-              // tslint:disable-next-line:jsx-no-lambda
               onClick={async () => {
+                await client.resetStore();
                 await mutate({
                   variables: { email, password }
                 });
