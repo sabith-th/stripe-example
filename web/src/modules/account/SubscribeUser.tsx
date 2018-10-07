@@ -12,6 +12,7 @@ const createSubscriptionMutation = gql`
     createSubscription(source: $source) {
       id
       email
+      type
     }
   }
 `;

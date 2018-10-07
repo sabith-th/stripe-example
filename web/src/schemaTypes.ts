@@ -2,12 +2,29 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL query operation: MeQuery
+// ====================================================
+
+export interface MeQuery_me {
+  id: string;
+  email: string;
+  type: string;
+}
+
+export interface MeQuery {
+  me: MeQuery_me | null;
+}
+
+/* tslint:disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL mutation operation: CreateSubscriptionMutation
 // ====================================================
 
 export interface CreateSubscriptionMutation_createSubscription {
   id: string;
-  email: string | null;
+  email: string;
 }
 
 export interface CreateSubscriptionMutation {
@@ -27,7 +44,7 @@ export interface CreateSubscriptionMutationVariables {
 
 export interface LoginMutation_login {
   id: string;
-  email: string | null;
+  email: string;
 }
 
 export interface LoginMutation {
@@ -37,22 +54,6 @@ export interface LoginMutation {
 export interface LoginMutationVariables {
   email: string;
   password: string;
-}
-
-/* tslint:disable */
-// This file was automatically generated and should not be edited.
-
-// ====================================================
-// GraphQL query operation: MeQuery
-// ====================================================
-
-export interface MeQuery_me {
-  id: string;
-  email: string | null;
-}
-
-export interface MeQuery {
-  me: MeQuery_me | null;
 }
 
 /* tslint:disable */

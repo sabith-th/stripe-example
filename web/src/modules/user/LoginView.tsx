@@ -51,7 +51,7 @@ export class LoginView extends React.PureComponent<RouteComponentProps<{}>> {
                 await mutate({
                   variables: { email, password }
                 });
-                this.props.history.push("/me");
+                this.props.history.push("/account");
               }}
             >
               Login
