@@ -43,13 +43,29 @@ export const resolvers: IResolvers = {
         throw new Error("User not found");
       }
 
-      const customer = await stripe.customers.create({
-        email: user.email,
-        source,
-        plan: process.env.PLAN_ID
-      });
+      let stripeId = user.stripeId;
+      if (!stripeId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          source,
+          plan: process.env.PLAN_ID
+        });
+        stripeId = customer.id;
+      } else {
+        await stripe.customers.update(stripeId, {
+          source
+        });
+        await stripe.subscriptions.create({
+          customer: stripeId,
+          items: [
+            {
+              plan: process.env.PLAN_ID!
+            }
+          ]
+        });
+      }
 
-      user.stripeId = customer.id;
+      user.stripeId = stripeId;
       user.type = "standard";
       user.ccLast4 = ccLast4;
       user.save();
@@ -69,6 +85,31 @@ export const resolvers: IResolvers = {
       await stripe.customers.update(user.stripeId, { source });
       user.ccLast4 = ccLast4;
       user.save();
+
+      return user;
+    },
+    cancelSubscription: async (_, __, { req }) => {
+      if (!req.session || !req.session.userId) {
+        throw new Error("Not Authenticated");
+      }
+
+      const user = await User.findOne(req.session.userId);
+      if (!user || !user.stripeId || user.type !== "standard") {
+        throw new Error();
+      }
+
+      const stripeCustomer = await stripe.customers.retrieve(user.stripeId);
+      const [subscription] = stripeCustomer.subscriptions.data;
+      const deleteSubscription = stripe.subscriptions.del(subscription.id);
+      const deleteCard = stripe.customers.deleteCard(
+        user.stripeId,
+        stripeCustomer.default_source as string
+      );
+      await Promise.all([deleteCard, deleteSubscription]);
+
+      user.type = "free-trial";
+      await user.save();
+
       return user;
     }
   }

@@ -3,6 +3,7 @@ import { Query } from "react-apollo";
 import { Redirect } from "react-router-dom";
 import { meQuery } from "../../graphql/queries/me";
 import { MeQuery } from "../../schemaTypes";
+import { CancelSubscription } from "./CancelSubscription";
 import ChangeCreditCard from "./ChangeCreditCard";
 import SubscribeUser from "./SubscribeUser";
 
@@ -30,6 +31,7 @@ export class Account extends React.PureComponent {
                 <p>Current Credit Card: XXXX XXXX XXXX {data.me.ccLast4}</p>
               )}
               <ChangeCreditCard />
+              <CancelSubscription />
             </div>
           );
         }}
