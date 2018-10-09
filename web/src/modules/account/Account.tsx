@@ -3,6 +3,7 @@ import { Query } from "react-apollo";
 import { Redirect } from "react-router-dom";
 import { meQuery } from "../../graphql/queries/me";
 import { MeQuery } from "../../schemaTypes";
+import ChangeCreditCard from "./ChangeCreditCard";
 import SubscribeUser from "./SubscribeUser";
 
 export class Account extends React.PureComponent {
@@ -22,7 +23,15 @@ export class Account extends React.PureComponent {
           if (data.me.type === "free-trial") {
             return <SubscribeUser />;
           }
-          return <div>Your current subscription plan: {data.me.type}</div>;
+          return (
+            <div>
+              <p>Your current subscription plan: {data.me.type}</p>
+              {data.me.ccLast4 && (
+                <p>Current Credit Card: XXXX XXXX XXXX {data.me.ccLast4}</p>
+              )}
+              <ChangeCreditCard />
+            </div>
+          );
         }}
       </Query>
     );
