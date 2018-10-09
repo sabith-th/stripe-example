@@ -9,6 +9,7 @@ export const resolvers: IResolvers = {
       if (!req.session.userId) {
         return null;
       }
+
       return await User.findOne({ where: { id: req.session.userId } });
     }
   },
@@ -23,14 +24,16 @@ export const resolvers: IResolvers = {
       if (!user) {
         return null;
       }
+
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         return null;
       }
+
       req.session.userId = user.id;
       return user;
     },
-    createSubscription: async (_, { source }, { req }) => {
+    createSubscription: async (_, { source, ccLast4 }, { req }) => {
       if (!req.session || !req.session.userId) {
         throw new Error("Not Authenticated");
       }
@@ -48,8 +51,24 @@ export const resolvers: IResolvers = {
 
       user.stripeId = customer.id;
       user.type = "standard";
+      user.ccLast4 = ccLast4;
       user.save();
 
+      return user;
+    },
+    changeCreditCard: async (_, { source, ccLast4 }, { req }) => {
+      if (!req.session || !req.session.userId) {
+        throw new Error("Not Authenticated");
+      }
+
+      const user = await User.findOne(req.session.userId);
+      if (!user || !user.stripeId || user.type !== "standard") {
+        throw new Error();
+      }
+
+      await stripe.customers.update(user.stripeId, { source });
+      user.ccLast4 = ccLast4;
+      user.save();
       return user;
     }
   }
