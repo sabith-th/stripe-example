@@ -5,6 +5,7 @@ import { RouteComponentProps } from "react-router-dom";
 import { userFragment } from "src/graphql/fragments/userFragment";
 import { meQuery } from "../../graphql/queries/me";
 import { LoginMutation, LoginMutationVariables } from "../../schemaTypes";
+import { Form } from "./Form";
 
 const loginMutation = gql`
   mutation LoginMutation($email: String!, $password: String!) {
@@ -16,12 +17,7 @@ const loginMutation = gql`
 `;
 
 export class LoginView extends React.PureComponent<RouteComponentProps<{}>> {
-  public state = {
-    email: "",
-    password: ""
-  };
   public render() {
-    const { email, password } = this.state;
     return (
       <Mutation<LoginMutation, LoginMutationVariables>
         update={(cache, { data }) => {
@@ -36,49 +32,18 @@ export class LoginView extends React.PureComponent<RouteComponentProps<{}>> {
         mutation={loginMutation}
       >
         {(mutate, { client }) => (
-          <div
-            style={{
-              alignItems: "center",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center"
+          <Form
+            buttonText="Login"
+            onSubmit={async data => {
+              await client.resetStore();
+              await mutate({
+                variables: data
+              });
+              this.props.history.push("/account");
             }}
-          >
-            <input
-              type="email"
-              name="email"
-              placeholder="email"
-              value={email}
-              onChange={this.handleChange}
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="password"
-              value={password}
-              onChange={this.handleChange}
-            />
-            <button
-              onClick={async () => {
-                await client.resetStore();
-                await mutate({
-                  variables: { email, password }
-                });
-                this.props.history.push("/account");
-              }}
-            >
-              Login
-            </button>
-          </div>
+          />
         )}
       </Mutation>
     );
   }
-
-  private handleChange = (e: any) => {
-    const { name, value } = e.target;
-    this.setState({
-      [name]: value
-    });
-  };
 }
